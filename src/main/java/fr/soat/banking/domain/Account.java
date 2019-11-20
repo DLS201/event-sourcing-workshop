@@ -119,7 +119,8 @@ public class Account extends AggregateRoot<AccountId> {
         } else {
             //FIXME when funds are insufficient...
             // apply a TransferRequestRefused evolution on sender account
-            throw new RuntimeException("implement me !");
+            TransferRequestRefused event = new TransferRequestRefused(getId(), receiverAccount.getId(), amount);
+            this.apply(event);
         }
 
         return this;
@@ -144,7 +145,13 @@ public class Account extends AggregateRoot<AccountId> {
         // ELSE
         // 1. apply a CreditRequestRefused evolution on receiver account
         // 2. make abortTransferRequest() decision on sender account
-        throw new RuntimeException("implement me !");
+        if (status != OPEN) {
+            this.apply(new CreditRequestRefused(getId(), senderAccount.getId(), amount));
+            senderAccount.abortTransferRequest(getId(), amount);
+        } else {
+            this.apply(new FundCredited(getId(), senderAccount.getId(), amount));
+            senderAccount.apply(new FundDebited(senderAccount.getId(), getId(), amount));
+        }
     }
 
     @EvolutionFunction
