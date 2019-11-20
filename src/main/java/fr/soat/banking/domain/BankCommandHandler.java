@@ -31,7 +31,10 @@ public class BankCommandHandler {
         // 1. load the account aggregate using the repository
         // 2. invoke the decision function deposit() on the aggregate to apply the business logic
         // 3. save the mutated aggregate with the repository
-        throw new RuntimeException("implement me !");
+        Account account = loadAccount(id);
+        account.deposit(amount);
+
+        repository.save(account);
     }
 
     @Command
@@ -40,7 +43,10 @@ public class BankCommandHandler {
         // 1. load the account aggregate using the repository
         // 2. invoke the decision function withdraw() on the aggregate to apply the business logic
         // 3. save the mutated aggregate with the repository
-        throw new RuntimeException("implement me !");
+        Account account = loadAccount(id);
+        account.withdraw(amount);
+
+        repository.save(account);
     }
 
     @Command
