@@ -39,7 +39,10 @@ public class TransferProcessManager  {
         // 1. reload the sender Account
         // 2. make debit() decision on sender account
         // 3. save the sender Account
-        throw new RuntimeException("implement me !");
-    }
+        AccountId senderAccountId = fundCredited.getSenderAccountId();
+        Account senderAccount = accountRepository.load(senderAccountId);
 
+        senderAccount.debit(fundCredited.getAccountId(), fundCredited.getAmount());
+        accountRepository.save(senderAccount);
+    }
 }
