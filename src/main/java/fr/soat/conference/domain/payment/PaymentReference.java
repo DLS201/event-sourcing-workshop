@@ -13,7 +13,7 @@ public class PaymentReference {
     @Getter
     private final String reference;
 
-    public static PaymentReference genereate() {
+    public static PaymentReference generate() {
         return new PaymentReference(UUID.randomUUID().toString());
     }
 

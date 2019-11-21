@@ -6,6 +6,7 @@ import fr.soat.eventsourcing.api.DecisionFunction;
 import fr.soat.eventsourcing.api.EvolutionFunction;
 import lombok.Getter;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,13 @@ public class Conference extends AggregateRoot<ConferenceName>  {
     public void apply(ConferenceOpened conferenceOpened) {
         //FIXME
         // given the input event, init the conference state
-        throw new RuntimeException("implement me !");
+        this.status = OPEN;
+        this.seatPrice = conferenceOpened.getSeatPrice();
+
+        for (int i = 0; i < conferenceOpened.getPlaces(); i++) {
+            Seat seat = new Seat(i);
+            this.availableSeats.add(seat);
+        }
     }
 
     @DecisionFunction
@@ -45,7 +52,14 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         // The possible expected output events are:
         // - SeatBookingRequestRefused
         // - SeatBooked
-        throw new RuntimeException("implement me !");
+        if (this.availableSeats.isEmpty()) {
+            apply(new SeatBookingRequestRefused(this.getId(), orderId));
+            return Optional.empty();
+        }
+
+        Seat seat = this.availableSeats.get(0);
+        apply(new SeatBooked(this.getId(), orderId, seat));
+        return Optional.of(seat);
     }
 
     @DecisionFunction
@@ -53,7 +67,7 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         //FIXME
         // The expected output event is:
         // - SeatReleased
-        throw new RuntimeException("implement me !");
+        apply(new SeatReleased(this.getId(), seat));
     }
 
     @EvolutionFunction
@@ -62,7 +76,13 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         // given the input event:
         // - update the remaining available seats
         // - update the conference status if needed
-        throw new RuntimeException("implement me !");
+        Seat seat = conferenceSeatBooked.getSeat();
+        this.availableSeats.remove(seat);
+        this.seats.add(seat);
+
+        if (this.availableSeats.isEmpty()) {
+            this.status = FULL;
+        }
     }
 
     @EvolutionFunction
@@ -74,7 +94,13 @@ public class Conference extends AggregateRoot<ConferenceName>  {
     public void apply(SeatReleased seatReleased) {
         //FIXME
         // similar to apply(SeatBooked)
-        throw new RuntimeException("implement me !");
+        Seat seat = seatReleased.getSeat();
+        this.seats.remove(seat);
+        this.availableSeats.add(seat);
+
+        if (this.status == FULL) {
+            this.status = OPEN;
+        }
     }
 
     @Override

@@ -18,7 +18,7 @@ public class OrderTest {
     AccountId myAccountId = AccountId.next();
     OrderRepository repository = new OrderRepository(new InMemoryEventStore(new NOOPEventPublisher()));
     private Seat seatOne = new Seat(1);
-    private PaymentReference  paymentReference = PaymentReference.genereate();
+    private PaymentReference  paymentReference = PaymentReference.generate();
 
     @Test
     public void should_create_then_book_then_pay_order() {

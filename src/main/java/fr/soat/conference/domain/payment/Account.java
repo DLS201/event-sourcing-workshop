@@ -20,14 +20,15 @@ public class Account extends AggregateRoot<AccountId>  {
         //FIXME
         // The expected output event is:
         // - AccountCredited
-        throw new RuntimeException("implement me !");
+        apply(new AccountCredited(this.getId(), amount));
+        return this;
     }
 
     @EvolutionFunction
     public void apply(AccountCredited accountCredited) {
         //FIXME
         // should update the balance !
-        throw new RuntimeException("implement me !");
+        this.balance += accountCredited.getAmount();
     }
 
     @DecisionFunction
@@ -38,7 +39,17 @@ public class Account extends AggregateRoot<AccountId>  {
         // The possible expected output events are:
         // - PaymentAccepted
         // - PaymentRefused
-        throw new RuntimeException("implement me !");
+        PaymentRequested paymentRequested = new PaymentRequested(this.getId(), amount);
+        recordChange(paymentRequested);
+
+        if (this.balance < amount) {
+            apply(new PaymentRefused(this.getId(), amount, orderId));
+            return this;
+        }
+
+        PaymentReference reference = PaymentReference.generate();
+        apply(new PaymentAccepted(reference, this.getId(), amount, orderId));
+        return this;
     }
 
     @EvolutionFunction
@@ -50,7 +61,7 @@ public class Account extends AggregateRoot<AccountId>  {
     public void apply(PaymentAccepted paymentAccepted) {
         //FIXME
         // should update the balance !
-        throw new RuntimeException("implement me !");
+        this.balance -= paymentAccepted.getAmount();
     }
 
     @EvolutionFunction

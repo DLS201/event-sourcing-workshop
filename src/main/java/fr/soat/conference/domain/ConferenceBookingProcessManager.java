@@ -36,7 +36,10 @@ public class ConferenceBookingProcessManager {
         log.info("consuming {}", orderRequested.getClass().getSimpleName());
         //FIXME
         // expected to bookSeat() on the target conference
-        throw new RuntimeException("implement me !");
+        Conference conference = conferenceRepository.load(orderRequested.getConferenceName());
+        conference.bookSeat(orderRequested.getOrderId());
+
+        conferenceRepository.save(conference);
     }
 
     @EventListener
@@ -46,7 +49,15 @@ public class ConferenceBookingProcessManager {
         // expected to
         // 1. assign the seat to the order
         // 2. request a payment on the customer account
-        throw new RuntimeException("implement me !");
+        Order order = orderRepository.load(seatBooked.getOrderId());
+        order.assign(seatBooked.getSeat());
+
+        Conference conference = conferenceRepository.load(seatBooked.getConferenceName());
+        Account account = accountRepository.load(order.getAccountId());
+        account.requestPayment(conference.getSeatPrice(), order.getId());
+
+        orderRepository.save(order);
+        accountRepository.save(account);
     }
 
     @EventListener
@@ -54,7 +65,10 @@ public class ConferenceBookingProcessManager {
         log.info("consuming {}", seatBookingRequestRefused.getClass().getSimpleName());
         //FIXME
         // expected to propagate the seat booking request failure to the order through order.failSeatBooking()
-        throw new RuntimeException("implement me !");
+        Order order = orderRepository.load(seatBookingRequestRefused.getOrderId());
+        order.failSeatBooking();
+
+        orderRepository.save(order);
     }
 
     @EventListener
@@ -62,7 +76,10 @@ public class ConferenceBookingProcessManager {
         log.info("consuming {}", paymentAccepted.getClass().getSimpleName());
         //FIXME
         // expected to confirm the payment to the order through order.confirmPayment()
-        throw new RuntimeException("implement me !");
+        Order order = orderRepository.load(paymentAccepted.getOrderId());
+        order.confirmPayment(paymentAccepted.getPaymentReference());
+
+        orderRepository.save(order);
     }
 
     @EventListener
@@ -72,6 +89,13 @@ public class ConferenceBookingProcessManager {
         // expected to:
         // 1. propagate the payment refuse to the order through a order.refusePayment()
         // 2. cancel the booking on the conferenace to release the seat, through conference.cancelBooking()
-        throw new RuntimeException("implement me !");
+        Order order = orderRepository.load(paymentRefused.getOrderId());
+        Conference conference = conferenceRepository.load(order.getConferenceName());
+
+        conference.cancelBooking(order.getSeat());
+        order.refusePayment();
+
+        orderRepository.save(order);
+        conferenceRepository.save(conference);
     }
 }
