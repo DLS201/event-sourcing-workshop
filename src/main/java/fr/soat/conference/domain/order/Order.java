@@ -43,6 +43,8 @@ public class Order extends AggregateRoot<OrderId> {
         // should init the state of order (accountId, conferenceName)
         this.accountId = orderRequested.getAccountId();
         this.conferenceName = orderRequested.getConferenceName();
+
+        recordChange(orderRequested);
     }
 
     @DecisionFunction
@@ -60,6 +62,8 @@ public class Order extends AggregateRoot<OrderId> {
         // should update state (order status and assigned seat)
         this.seat = orderSeatBooked.getBookedSeat();
         this.status = SEAT_BOOKED;
+
+        recordChange(orderSeatBooked);
     }
 
     @DecisionFunction
@@ -78,6 +82,8 @@ public class Order extends AggregateRoot<OrderId> {
         // - (no) assigned seat
         this.seat = null;
         this.status = SEAT_BOOKING_FAILED;
+
+        recordChange(orderSeatBookingFailed);
     }
 
     @DecisionFunction
@@ -96,6 +102,8 @@ public class Order extends AggregateRoot<OrderId> {
         // - the payment reference
         this.paymentReference = orderPaid.getPaymentReference();
         this.status = PAID;
+
+        recordChange(orderPaid);
     }
 
     @DecisionFunction
@@ -116,6 +124,8 @@ public class Order extends AggregateRoot<OrderId> {
         this.paymentReference = null;
         this.status = PAYMENT_REFUSED;
         this.seat = null;
+
+        recordChange(orderPaymentRefused);
     }
 
 }

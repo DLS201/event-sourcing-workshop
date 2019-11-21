@@ -37,12 +37,14 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         //FIXME
         // given the input event, init the conference state
         this.status = OPEN;
-        this.seatPrice = conferenceOpened.getSeatPrice();
-
-        for (int i = 0; i < conferenceOpened.getPlaces(); i++) {
-            Seat seat = new Seat(i);
-            this.availableSeats.add(seat);
+        this.seats.clear();
+        for (int i = 1; i < conferenceOpened.getPlaces() + 1; i++) {
+            this.seats.add(new Seat(i));
         }
+        this.availableSeats.clear();
+        this.availableSeats.addAll(seats);
+        this.seatPrice = conferenceOpened.getSeatPrice();
+        recordChange(conferenceOpened);
     }
 
     @DecisionFunction
@@ -83,6 +85,8 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         if (this.availableSeats.isEmpty()) {
             this.status = FULL;
         }
+
+        recordChange(conferenceSeatBooked);
     }
 
     @EvolutionFunction
@@ -101,6 +105,8 @@ public class Conference extends AggregateRoot<ConferenceName>  {
         if (this.status == FULL) {
             this.status = OPEN;
         }
+
+        recordChange(seatReleased);
     }
 
     @Override

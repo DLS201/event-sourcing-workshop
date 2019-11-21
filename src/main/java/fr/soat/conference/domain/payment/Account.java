@@ -29,6 +29,7 @@ public class Account extends AggregateRoot<AccountId>  {
         //FIXME
         // should update the balance !
         this.balance += accountCredited.getAmount();
+        recordChange(accountCredited);
     }
 
     @DecisionFunction
@@ -62,6 +63,7 @@ public class Account extends AggregateRoot<AccountId>  {
         //FIXME
         // should update the balance !
         this.balance -= paymentAccepted.getAmount();
+        recordChange(paymentAccepted);
     }
 
     @EvolutionFunction
